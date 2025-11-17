@@ -48,6 +48,8 @@ Fully functional MVP with PDF upload, text extraction, pattern detection, and re
 - flask - Web framework
 - flask-cors - Cross-origin support
 - pdfplumber - PDF text extraction
+- pytesseract - OCR for image-based PDFs
+- tesseract - OCR engine (system)
 
 ## Run Configuration
 - **Port**: 5000 (required for Replit webview)

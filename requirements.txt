@@ -4,3 +4,5 @@ pdfplumber
 flask
 flask-cors
 pdfplumber
+pdf2image
+pytesseract

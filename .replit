@@ -4,6 +4,7 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
+packages = ["poppler_utils", "tesseract"]
 
 [workflows]
 runButton = "Project"
@@ -34,5 +35,5 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 46783
-externalPort = 3001
+localPort = 33663
+externalPort = 3000

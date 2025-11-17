@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import pdfplumber
+import pytesseract
 import re
 import os
 
@@ -14,11 +15,25 @@ def extract_transactions(pdf_path):
             print(f"PDF opened successfully. Total pages: {len(pdf.pages)}")
             for page_num, page in enumerate(pdf.pages, 1):
                 text = page.extract_text()
-                print(f"Page {page_num} text length: {len(text) if text else 0}")
+                
+                if not text or len(text.strip()) < 10:
+                    print(f"Page {page_num}: No text found, trying OCR...")
+                    try:
+                        img = page.to_image(resolution=300)
+                        pil_image = img.original
+                        text = pytesseract.image_to_string(pil_image)
+                        print(f"Page {page_num}: OCR extracted {len(text)} characters")
+                    except Exception as ocr_error:
+                        print(f"Page {page_num}: OCR failed: {ocr_error}")
+                        text = ""
+                else:
+                    print(f"Page {page_num}: Regular extraction got {len(text)} characters")
+                
                 if text:
                     lines = text.split('\n')
                     transactions.extend(lines)
-                    print(f"Page {page_num} extracted {len(lines)} lines")
+                    print(f"Page {page_num}: Added {len(lines)} lines")
+            
             print(f"Total transactions extracted: {len(transactions)}")
     except Exception as e:
         print(f"Error extracting PDF: {e}")
