@@ -209,3 +209,16 @@ function showError(message) {
     error.classList.remove('hidden');
     results.classList.add('hidden');
 }
+
+function toggleSection(sectionName) {
+    const content = document.getElementById(`${sectionName}Content`);
+    const icon = document.getElementById(`${sectionName}Icon`);
+    
+    if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+        content.style.maxHeight = '0px';
+        icon.style.transform = 'rotate(0deg)';
+    } else {
+        content.style.maxHeight = content.scrollHeight + 'px';
+        icon.style.transform = 'rotate(180deg)';
+    }
+}
