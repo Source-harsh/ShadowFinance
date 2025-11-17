@@ -4,88 +4,135 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ShadowFinance - Hidden Money Detector</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#059669',
+                        secondary: '#0d9488',
+                        accent: '#14b8a6',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['Space Grotesk', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.15;
+            z-index: 0;
+            background-image: 
+                url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><text x="10" y="50" font-size="40" opacity="0.5">💰</text><text x="60" y="80" font-size="30" opacity="0.3">💵</text></svg>'),
+                url('data:image/svg+xml,<svg width="120" height="120" xmlns="http://www.w3.org/2000/svg"><text x="20" y="60" font-size="35" opacity="0.4">💳</text><text x="70" y="90" font-size="28" opacity="0.3">💸</text></svg>');
+            background-size: 400px 400px, 500px 500px;
+            background-position: 0 0, 250px 250px;
+            pointer-events: none;
+        }
+        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; }
+        .container { position: relative; z-index: 1; }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-purple-900 via-blue-900 to-black min-h-screen text-white">
+<body class="min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
-        <div class="text-center mb-12">
-            <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+        <div class="text-center mb-12 animate-fade-in">
+            <h1 class="text-6xl md:text-7xl font-display font-bold mb-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent drop-shadow-sm">
                 ShadowFinance
             </h1>
-            <p class="text-xl text-gray-300">Hidden Money Detector</p>
-            <p class="text-sm text-gray-400 mt-2">Upload your bank statement PDF to detect hidden financial leaks</p>
+            <p class="text-2xl font-semibold text-gray-700 mb-2">Hidden Money Detector</p>
+            <p class="text-base text-gray-600 mt-3 max-w-2xl mx-auto leading-relaxed">Upload your bank statement PDF to uncover hidden financial leaks, recurring charges, and micro-transactions</p>
         </div>
 
-        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl mb-8">
+        <div class="bg-white rounded-3xl p-10 shadow-xl border border-gray-200 mb-8 hover:shadow-2xl transition-all duration-300">
             <div class="mb-6">
-                <label class="block mb-4 text-lg font-semibold">Upload Bank Statement (PDF)</label>
-                <div id="dropzone" class="border-2 border-dashed border-purple-400 rounded-xl p-12 text-center hover:border-pink-400 transition-colors cursor-pointer">
+                <label class="block mb-5 text-xl font-display font-semibold text-gray-800">Upload Bank Statement (PDF)</label>
+                <div id="dropzone" class="border-3 border-dashed border-emerald-300 rounded-2xl p-16 text-center hover:border-teal-400 hover:bg-emerald-50 transition-all duration-300 cursor-pointer group bg-gray-50">
                     <input type="file" id="fileInput" accept=".pdf" class="hidden">
-                    <div class="mx-auto h-16 w-16 mb-4 flex items-center justify-center">
-                        <svg class="h-full w-full text-black" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                    <div class="mx-auto h-20 w-20 mb-6 flex items-center justify-center bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <svg class="h-12 w-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
                         </svg>
                     </div>
-                    <p class="text-gray-300 mb-2">Click to browse or drag and drop your PDF here</p>
-                    <p class="text-sm text-gray-400" id="fileName">No file selected</p>
+                    <p class="text-gray-700 font-medium mb-3 text-lg">Click to browse or drag and drop your PDF here</p>
+                    <p class="text-sm text-gray-500 font-medium" id="fileName">No file selected</p>
                 </div>
             </div>
 
-            <button id="analyzeBtn" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+            <button id="analyzeBtn" class="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:via-teal-500 hover:to-cyan-500 text-white font-display font-bold text-lg py-5 px-8 rounded-2xl transition-all transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none active:scale-[0.98]">
                 Analyze PDF
             </button>
         </div>
 
-        <div id="loading" class="hidden text-center py-8">
-            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400"></div>
-            <p class="mt-4 text-gray-300">Analyzing your bank statement...</p>
+        <div id="loading" class="hidden text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-emerald-200 border-t-emerald-600"></div>
+            <p class="mt-6 text-gray-700 font-medium text-lg">Analyzing your bank statement...</p>
+            <p class="mt-2 text-gray-500 text-sm">This may take a moment</p>
         </div>
 
         <div id="results" class="hidden">
-            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl mb-6">
-                <h2 class="text-3xl font-bold mb-6 text-center">
-                    Total Money Wasted: <span id="totalWaste" class="text-red-400">₹0</span>
+            <div class="bg-white rounded-3xl p-10 shadow-xl border-2 border-red-200 mb-8">
+                <h2 class="text-4xl md:text-5xl font-display font-bold mb-8 text-center">
+                    Total Money Wasted: <span id="totalWaste" class="text-red-600">₹0</span>
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div class="bg-black/30 p-4 rounded-lg">
-                        <p class="text-sm text-gray-400">Total Transactions</p>
-                        <p class="text-2xl font-bold text-white" id="transactionCount">0</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-2xl border border-emerald-200 hover:shadow-lg transition-all duration-300">
+                        <p class="text-sm font-semibold text-emerald-700 uppercase tracking-wider mb-2">Total Transactions</p>
+                        <p class="text-3xl font-display font-bold text-gray-800" id="transactionCount">0</p>
                     </div>
-                    <div class="bg-black/30 p-4 rounded-lg">
-                        <p class="text-sm text-gray-400">Categories Detected</p>
-                        <p class="text-2xl font-bold text-white" id="categoriesCount">0</p>
+                    <div class="bg-gradient-to-br from-cyan-50 to-blue-50 p-6 rounded-2xl border border-cyan-200 hover:shadow-lg transition-all duration-300">
+                        <p class="text-sm font-semibold text-cyan-700 uppercase tracking-wider mb-2">Categories Detected</p>
+                        <p class="text-3xl font-display font-bold text-gray-800" id="categoriesCount">0</p>
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div class="bg-white/10 backdrop-blur-lg rounded-xl p-6 shadow-xl">
-                    <h3 class="text-xl font-bold mb-4 flex items-center">
-                        <span class="bg-blue-500 rounded-full w-3 h-3 mr-2"></span>
+                <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
+                    <h3 class="text-xl font-display font-bold mb-4 flex items-center text-gray-800">
+                        <span class="bg-emerald-500 rounded-full w-3 h-3 mr-2"></span>
                         Top Merchants by Spending
                     </h3>
                     <div id="topMerchants" class="space-y-2"></div>
                 </div>
 
-                <div class="bg-white/10 backdrop-blur-lg rounded-xl p-6 shadow-xl">
-                    <h3 class="text-xl font-bold mb-4 flex items-center">
-                        <span class="bg-pink-500 rounded-full w-3 h-3 mr-2"></span>
+                <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
+                    <h3 class="text-xl font-display font-bold mb-4 flex items-center text-gray-800">
+                        <span class="bg-teal-500 rounded-full w-3 h-3 mr-2"></span>
                         Spending by Category
                     </h3>
                     <div id="categorySpending" class="space-y-2"></div>
                 </div>
             </div>
 
-            <div class="bg-white/10 backdrop-blur-lg rounded-xl p-6 shadow-xl mb-6">
-                <h3 class="text-xl font-bold mb-4 flex items-center">
-                    <span class="bg-indigo-500 rounded-full w-3 h-3 mr-2"></span>
+            <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 mb-6">
+                <h3 class="text-xl font-display font-bold mb-4 flex items-center text-gray-800">
+                    <span class="bg-cyan-500 rounded-full w-3 h-3 mr-2"></span>
                     Summary by Category
                 </h3>
                 <div id="categorySummary" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
             </div>
 
-            <div class="bg-gradient-to-r from-green-500/20 to-teal-500/20 border border-green-500/30 rounded-xl p-6 shadow-xl mb-6">
-                <h3 class="text-xl font-bold mb-4 flex items-center text-green-300">
+            <div class="bg-gradient-to-br from-emerald-50 to-green-50 border-2 border-emerald-300 rounded-xl p-6 shadow-lg mb-6">
+                <h3 class="text-xl font-display font-bold mb-4 flex items-center text-emerald-700">
                     <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                     </svg>
@@ -95,9 +142,9 @@
             </div>
 
             <div class="grid gap-6">
-                <div class="bg-white/10 backdrop-blur-lg rounded-xl shadow-xl overflow-hidden">
-                    <button class="w-full p-6 text-left hover:bg-white/5 transition-colors flex items-center justify-between" onclick="toggleSection('repeatingCharges')">
-                        <h3 class="text-xl font-bold flex items-center">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                    <button class="w-full p-6 text-left hover:bg-gray-50 transition-colors flex items-center justify-between" onclick="toggleSection('repeatingCharges')">
+                        <h3 class="text-xl font-display font-bold flex items-center text-gray-800">
                             <span class="bg-red-500 rounded-full w-3 h-3 mr-2"></span>
                             Repeating Charges
                         </h3>

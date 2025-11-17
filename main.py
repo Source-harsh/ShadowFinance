@@ -22,15 +22,34 @@ CORS(app)
 # Allow users to set the tesseract executable path using environment variable
 # Useful on Windows if tesseract isn't on PATH or uses a custom install location
 if os.environ.get('TESSERACT_CMD'):
-    pytesseract.pytesseract.tesseract_cmd = os.environ.get('TESSERACT_CMD')
-    logger.info(f"Using TESSERACT_CMD from env: {pytesseract.pytesseract.tesseract_cmd}")
+    tesseract_cmd = os.environ.get('TESSERACT_CMD')
+    if os.path.exists(tesseract_cmd):
+        pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
+        logger.info(f"Using TESSERACT_CMD from env: {pytesseract.pytesseract.tesseract_cmd}")
+    else:
+        logger.warning(f"TESSERACT_CMD is set but the path does not exist: {tesseract_cmd}. "
+                       "If Tesseract is installed, set TESSERACT_CMD to the full path or add tesseract to PATH.")
 
 def extract_transactions(pdf_path):
     transactions = []
-    # check if the system has Tesseract command available
-    tesseract_available = shutil.which('tesseract') is not None
+    # check for tesseract either in PATH or via TESSERACT_CMD env var
+    tesseract_env = os.environ.get('TESSERACT_CMD')
+    tesseract_path = tesseract_env or shutil.which('tesseract')
+    tesseract_available = False
+    if tesseract_path:
+        # If we were given a path via env var, ensure it exists
+        if tesseract_env:
+            if os.path.exists(tesseract_env):
+                tesseract_available = True
+            else:
+                logger.debug("TESSERACT_CMD set but not found on disk; OCR disabled")
+        else:
+            # found via PATH
+            tesseract_available = True
+
     if not tesseract_available:
-        logger.debug("Tesseract command not found in PATH; OCR won't be available.")
+        logger.debug("Tesseract command not found; OCR won't be available. Set TESSERACT_CMD or add tesseract to PATH.")
+
     try:
         with pdfplumber.open(pdf_path) as pdf:
             logger.info(f"PDF opened successfully. Total pages: {len(pdf.pages)}")
@@ -41,7 +60,7 @@ def extract_transactions(pdf_path):
                     logger.info(f"Page {page_num}: No text found, trying OCR...")
                     try:
                         if not tesseract_available:
-                            raise EnvironmentError("tesseract is not installed or it's not in your PATH")
+                            raise EnvironmentError("tesseract is not installed or TESSERACT_CMD is not set to a valid path")
                         img = page.to_image(resolution=300)
                         pil_image = img.original
                         text = pytesseract.image_to_string(pil_image)
@@ -49,7 +68,7 @@ def extract_transactions(pdf_path):
                     except Exception as ocr_error:
                         logger.warning(
                             f"Page {page_num}: OCR failed: {ocr_error}. "
-                            "If your PDF is scanned or contains images, install Tesseract to enable OCR (see README)."
+                            "If your PDF is scanned or contains images, install Tesseract or set TESSERACT_CMD (see README)."
                         )
                         text = ""
                 else:

@@ -52,22 +52,22 @@ function displayTopMerchants(merchants) {
     const container = document.getElementById('topMerchants');
     
     if (merchants.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 italic">No merchant data available</p>';
+        container.innerHTML = '<p class="text-gray-600 italic">No merchant data available</p>';
         return;
     }
     
     let html = '';
     merchants.forEach((merchant, index) => {
         html += `
-            <div class="bg-black/30 p-3 rounded-lg flex justify-between items-center">
+            <div class="bg-gray-50 p-3 rounded-lg flex justify-between items-center border border-gray-200">
                 <div class="flex items-center gap-3">
-                    <span class="text-lg font-bold text-gray-400">${index + 1}.</span>
+                    <span class="text-lg font-bold text-gray-500">${index + 1}.</span>
                     <div>
-                        <p class="font-semibold text-white">${merchant.name}</p>
-                        <p class="text-xs text-gray-400">${merchant.count} transactions</p>
+                        <p class="font-semibold text-gray-800">${merchant.name}</p>
+                        <p class="text-xs text-gray-500">${merchant.count} transactions</p>
                     </div>
                 </div>
-                <span class="text-blue-400 font-bold">₹${merchant.amount.toLocaleString('en-IN')}</span>
+                <span class="text-emerald-600 font-bold">₹${merchant.amount.toLocaleString('en-IN')}</span>
             </div>
         `;
     });
@@ -79,7 +79,7 @@ function displayCategorySpending(categories) {
     const container = document.getElementById('categorySpending');
     
     if (categories.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 italic">No category data available</p>';
+        container.innerHTML = '<p class="text-gray-600 italic">No category data available</p>';
         return;
     }
     
@@ -96,12 +96,12 @@ function displayCategorySpending(categories) {
     categories.forEach(cat => {
         const icon = categoryIcons[cat.category] || '📦';
         html += `
-            <div class="bg-black/30 p-3 rounded-lg flex justify-between items-center">
+            <div class="bg-gray-50 p-3 rounded-lg flex justify-between items-center border border-gray-200">
                 <div class="flex items-center gap-2">
                     <span class="text-xl">${icon}</span>
-                    <span class="font-semibold text-white">${cat.category}</span>
+                    <span class="font-semibold text-gray-800">${cat.category}</span>
                 </div>
-                <span class="text-pink-400 font-bold">₹${cat.amount.toLocaleString('en-IN')}</span>
+                <span class="text-teal-600 font-bold">₹${cat.amount.toLocaleString('en-IN')}</span>
             </div>
         `;
     });
@@ -122,12 +122,12 @@ function displayCategorySummary(summary) {
     let html = '';
     categories.forEach(cat => {
         html += `
-            <div class="bg-black/30 p-4 rounded-lg">
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm text-gray-400">${cat.name}</span>
-                    <span class="bg-${cat.color}-500 text-xs px-2 py-1 rounded-full">${cat.data.count}</span>
+                    <span class="text-sm text-gray-600 font-medium">${cat.name}</span>
+                    <span class="bg-${cat.color}-500 text-white text-xs px-2 py-1 rounded-full">${cat.data.count}</span>
                 </div>
-                <p class="text-xl font-bold text-${cat.color}-400">₹${cat.data.amount.toLocaleString('en-IN')}</p>
+                <p class="text-xl font-bold text-${cat.color}-600">₹${cat.data.total.toLocaleString('en-IN')}</p>
             </div>
         `;
     });
@@ -141,8 +141,8 @@ function displaySuggestions(suggestions) {
     let html = '';
     suggestions.forEach(suggestion => {
         html += `
-            <li class="flex items-start gap-2 text-green-200">
-                <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <li class="flex items-start gap-2 text-gray-700">
+                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                 </svg>
                 <span>${suggestion}</span>
@@ -157,23 +157,24 @@ function displayRepeatingCharges(charges) {
     const container = document.getElementById('repeatingCharges');
     
     if (charges.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 italic">No repeating charges detected</p>';
+        container.innerHTML = '<p class="text-gray-600 italic">No repeating charges detected</p>';
         return;
     }
     
     let html = '<div class="space-y-4">';
     charges.forEach(charge => {
+        const average = charge.total / charge.count;
         html += `
-            <div class="bg-black/30 p-4 rounded-lg">
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <div class="flex justify-between items-start mb-2">
                     <div>
-                        <p class="font-bold text-white text-lg">${charge.merchant}</p>
-                        <p class="text-sm text-gray-400">Occurred ${charge.count} times</p>
+                        <p class="font-bold text-gray-800 text-lg">${charge.merchant}</p>
+                        <p class="text-sm text-gray-600">Occurred ${charge.count} times</p>
                     </div>
-                    <span class="text-red-400 font-bold text-xl">₹${charge.total.toLocaleString('en-IN')}</span>
+                    <span class="text-red-600 font-bold text-xl">₹${charge.total.toLocaleString('en-IN')}</span>
                 </div>
-                <div class="text-sm text-gray-300">
-                    <p>Average: ₹${charge.average.toLocaleString('en-IN')} per transaction</p>
+                <div class="text-sm text-gray-600">
+                    <p>Average: ₹${average.toFixed(2)} per transaction</p>
                 </div>
             </div>
         `;
@@ -187,20 +188,20 @@ function displayMicroTransactions(transactions) {
     const container = document.getElementById('microTransactions');
     
     if (transactions.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 italic">No micro transactions detected</p>';
+        container.innerHTML = '<p class="text-gray-600 italic">No micro transactions detected</p>';
         return;
     }
     
     let html = '<div class="space-y-2">';
     transactions.forEach(trans => {
-        const categoryBadge = trans.category ? `<span class="text-xs bg-blue-500/30 px-2 py-1 rounded">${trans.category}</span>` : '';
+        const categoryBadge = trans.category ? `<span class="text-xs bg-cyan-100 text-cyan-700 px-2 py-1 rounded">${trans.category}</span>` : '';
         html += `
-            <div class="bg-black/30 p-3 rounded-lg flex justify-between items-center">
+            <div class="bg-gray-50 p-3 rounded-lg flex justify-between items-center border border-gray-200">
                 <div class="flex-1">
-                    <p class="text-white text-sm">${trans.line}</p>
+                    <p class="text-gray-700 text-sm">${trans.line}</p>
                     ${categoryBadge}
                 </div>
-                <span class="text-yellow-400 font-semibold ml-4">₹${trans.amount.toLocaleString('en-IN')}</span>
+                <span class="text-yellow-600 font-semibold ml-4">₹${trans.amount.toLocaleString('en-IN')}</span>
             </div>
         `;
     });
@@ -213,20 +214,20 @@ function displayFees(fees) {
     const container = document.getElementById('fees');
     
     if (fees.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 italic">No fees detected</p>';
+        container.innerHTML = '<p class="text-gray-600 italic">No fees detected</p>';
         return;
     }
     
     let html = '<div class="space-y-2">';
     fees.forEach(fee => {
-        const categoryBadge = fee.category ? `<span class="text-xs bg-blue-500/30 px-2 py-1 rounded">${fee.category}</span>` : '';
+        const categoryBadge = fee.category ? `<span class="text-xs bg-cyan-100 text-cyan-700 px-2 py-1 rounded">${fee.category}</span>` : '';
         html += `
-            <div class="bg-black/30 p-3 rounded-lg flex justify-between items-center">
+            <div class="bg-gray-50 p-3 rounded-lg flex justify-between items-center border border-gray-200">
                 <div class="flex-1">
-                    <p class="text-white text-sm">${fee.line}</p>
+                    <p class="text-gray-700 text-sm">${fee.line}</p>
                     ${categoryBadge}
                 </div>
-                <span class="text-orange-400 font-semibold ml-4">₹${fee.amount.toLocaleString('en-IN')}</span>
+                <span class="text-orange-600 font-semibold ml-4">₹${fee.amount.toLocaleString('en-IN')}</span>
             </div>
         `;
     });
@@ -239,20 +240,20 @@ function displayPenalties(penalties) {
     const container = document.getElementById('penalties');
     
     if (penalties.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 italic">No penalties detected</p>';
+        container.innerHTML = '<p class="text-gray-600 italic">No penalties detected</p>';
         return;
     }
     
     let html = '<div class="space-y-2">';
     penalties.forEach(penalty => {
-        const categoryBadge = penalty.category ? `<span class="text-xs bg-blue-500/30 px-2 py-1 rounded">${penalty.category}</span>` : '';
+        const categoryBadge = penalty.category ? `<span class="text-xs bg-cyan-100 text-cyan-700 px-2 py-1 rounded">${penalty.category}</span>` : '';
         html += `
-            <div class="bg-black/30 p-3 rounded-lg flex justify-between items-center">
+            <div class="bg-gray-50 p-3 rounded-lg flex justify-between items-center border border-gray-200">
                 <div class="flex-1">
-                    <p class="text-white text-sm">${penalty.line}</p>
+                    <p class="text-gray-700 text-sm">${penalty.line}</p>
                     ${categoryBadge}
                 </div>
-                <span class="text-purple-400 font-semibold ml-4">₹${penalty.amount.toLocaleString('en-IN')}</span>
+                <span class="text-purple-600 font-semibold ml-4">₹${penalty.amount.toLocaleString('en-IN')}</span>
             </div>
         `;
     });

@@ -114,22 +114,22 @@ function displayTopMerchants(merchants) {
     const container = document.getElementById('topMerchants');
     
     if (merchants.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 italic">No merchant data available</p>';
+        container.innerHTML = '<p class="text-gray-600 italic">No merchant data available</p>';
         return;
     }
     
     let html = '';
     merchants.forEach((merchant, index) => {
         html += `
-            <div class="bg-black/30 p-3 rounded-lg flex justify-between items-center">
+            <div class="bg-gray-50 p-3 rounded-lg flex justify-between items-center border border-gray-200">
                 <div class="flex items-center gap-3">
-                    <span class="text-lg font-bold text-gray-400">${index + 1}.</span>
+                    <span class="text-lg font-bold text-gray-500">${index + 1}.</span>
                     <div>
-                        <p class="font-semibold text-white">${merchant.name}</p>
-                        <p class="text-xs text-gray-400">${merchant.count} transactions</p>
+                        <p class="font-semibold text-gray-800">${merchant.name}</p>
+                        <p class="text-xs text-gray-500">${merchant.count} transactions</p>
                     </div>
                 </div>
-                <span class="text-blue-400 font-bold">₹${merchant.amount.toLocaleString('en-IN')}</span>
+                <span class="text-emerald-600 font-bold">₹${merchant.amount.toLocaleString('en-IN')}</span>
             </div>
         `;
     });
@@ -141,7 +141,7 @@ function displayCategorySpending(categories) {
     const container = document.getElementById('categorySpending');
     
     if (categories.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 italic">No category data available</p>';
+        container.innerHTML = '<p class="text-gray-600 italic">No category data available</p>';
         return;
     }
     
@@ -158,12 +158,12 @@ function displayCategorySpending(categories) {
     categories.forEach(cat => {
         const icon = categoryIcons[cat.category] || '📦';
         html += `
-            <div class="bg-black/30 p-3 rounded-lg flex justify-between items-center">
+            <div class="bg-gray-50 p-3 rounded-lg flex justify-between items-center border border-gray-200">
                 <div class="flex items-center gap-2">
                     <span class="text-xl">${icon}</span>
-                    <span class="font-semibold text-white">${cat.category}</span>
+                    <span class="font-semibold text-gray-800">${cat.category}</span>
                 </div>
-                <span class="text-pink-400 font-bold">₹${cat.amount.toLocaleString('en-IN')}</span>
+                <span class="text-teal-600 font-bold">₹${cat.amount.toLocaleString('en-IN')}</span>
             </div>
         `;
     });
@@ -184,10 +184,10 @@ function displayCategorySummary(summary) {
     let html = '';
     categories.forEach(cat => {
         html += `
-            <div class="bg-black/30 p-4 rounded-lg">
-                <p class="text-sm text-gray-400 mb-1">${cat.name}</p>
-                <p class="text-xl font-bold text-${cat.color}-400">₹${cat.data.total.toLocaleString('en-IN')}</p>
-                <p class="text-xs text-gray-400">${cat.data.count} items</p>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-sm text-gray-600 mb-1 font-medium">${cat.name}</p>
+                <p class="text-xl font-bold text-${cat.color}-600">₹${cat.data.total.toLocaleString('en-IN')}</p>
+                <p class="text-xs text-gray-500">${cat.data.count} items</p>
             </div>
         `;
     });
@@ -201,8 +201,8 @@ function displaySuggestions(suggestions) {
     let html = '';
     suggestions.forEach(suggestion => {
         html += `
-            <li class="flex items-start gap-2 text-gray-200">
-                <svg class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <li class="flex items-start gap-2 text-gray-700">
+                <svg class="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                 </svg>
                 <span>${suggestion}</span>
@@ -217,19 +217,19 @@ function displayRepeatingCharges(charges) {
     const container = document.getElementById('repeatingCharges');
     
     if (charges.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 italic">No repeating charges detected</p>';
+        container.innerHTML = '<p class="text-gray-600 italic">No repeating charges detected</p>';
         return;
     }
     
     let html = '<ul class="space-y-3">';
     charges.forEach(charge => {
         html += `
-            <li class="bg-black/30 p-4 rounded-lg">
+            <li class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <div class="flex justify-between items-start mb-2">
-                    <span class="font-semibold text-white">${charge.merchant}</span>
-                    <span class="text-red-400 font-bold">₹${charge.total.toLocaleString('en-IN')}</span>
+                    <span class="font-semibold text-gray-800">${charge.merchant}</span>
+                    <span class="text-red-600 font-bold">₹${charge.total.toLocaleString('en-IN')}</span>
                 </div>
-                <p class="text-sm text-gray-400">Appears ${charge.count} times</p>
+                <p class="text-sm text-gray-600">Appears ${charge.count} times</p>
             </li>
         `;
     });
@@ -242,20 +242,20 @@ function displayMicroTransactions(transactions) {
     const container = document.getElementById('microTransactions');
     
     if (transactions.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 italic">No micro transactions detected</p>';
+        container.innerHTML = '<p class="text-gray-600 italic">No micro transactions detected</p>';
         return;
     }
     
     const total = transactions.reduce((sum, t) => sum + t.amount, 0);
     
-    let html = `<p class="mb-3 text-yellow-400 font-semibold">Found ${transactions.length} small charges totaling ₹${total.toLocaleString('en-IN')}</p>`;
+    let html = `<p class="mb-3 text-yellow-600 font-semibold">Found ${transactions.length} small charges totaling ₹${total.toLocaleString('en-IN')}</p>`;
     html += '<ul class="space-y-2 max-h-60 overflow-y-auto">';
     
     transactions.slice(0, 10).forEach(trans => {
         html += `
-            <li class="bg-black/30 p-3 rounded-lg flex justify-between items-center">
-                <span class="text-sm truncate mr-2">${trans.line}</span>
-                <span class="text-yellow-400 font-semibold whitespace-nowrap">₹${trans.amount}</span>
+            <li class="bg-gray-50 p-3 rounded-lg flex justify-between items-center border border-gray-200">
+                <span class="text-sm truncate mr-2 text-gray-700">${trans.line}</span>
+                <span class="text-yellow-600 font-semibold whitespace-nowrap">₹${trans.amount}</span>
             </li>
         `;
     });
@@ -272,20 +272,20 @@ function displayFees(fees) {
     const container = document.getElementById('fees');
     
     if (fees.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 italic">No fees or charges detected</p>';
+        container.innerHTML = '<p class="text-gray-600 italic">No fees or charges detected</p>';
         return;
     }
     
     const total = fees.reduce((sum, f) => sum + f.amount, 0);
     
-    let html = `<p class="mb-3 text-orange-400 font-semibold">Found ${fees.length} fees totaling ₹${total.toLocaleString('en-IN')}</p>`;
+    let html = `<p class="mb-3 text-orange-600 font-semibold">Found ${fees.length} fees totaling ₹${total.toLocaleString('en-IN')}</p>`;
     html += '<ul class="space-y-2 max-h-60 overflow-y-auto">';
     
     fees.forEach(fee => {
         html += `
-            <li class="bg-black/30 p-3 rounded-lg flex justify-between items-center">
-                <span class="text-sm truncate mr-2">${fee.line}</span>
-                <span class="text-orange-400 font-semibold whitespace-nowrap">₹${fee.amount}</span>
+            <li class="bg-gray-50 p-3 rounded-lg flex justify-between items-center border border-gray-200">
+                <span class="text-sm truncate mr-2 text-gray-700">${fee.line}</span>
+                <span class="text-orange-600 font-semibold whitespace-nowrap">₹${fee.amount}</span>
             </li>
         `;
     });
@@ -298,20 +298,20 @@ function displayPenalties(penalties) {
     const container = document.getElementById('penalties');
     
     if (penalties.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 italic">No penalties or interest charges detected</p>';
+        container.innerHTML = '<p class="text-gray-600 italic">No penalties or interest charges detected</p>';
         return;
     }
     
     const total = penalties.reduce((sum, p) => sum + p.amount, 0);
     
-    let html = `<p class="mb-3 text-purple-400 font-semibold">Found ${penalties.length} penalties totaling ₹${total.toLocaleString('en-IN')}</p>`;
+    let html = `<p class="mb-3 text-purple-600 font-semibold">Found ${penalties.length} penalties totaling ₹${total.toLocaleString('en-IN')}</p>`;
     html += '<ul class="space-y-2 max-h-60 overflow-y-auto">';
     
     penalties.forEach(penalty => {
         html += `
-            <li class="bg-black/30 p-3 rounded-lg flex justify-between items-center">
-                <span class="text-sm truncate mr-2">${penalty.line}</span>
-                <span class="text-purple-400 font-semibold whitespace-nowrap">₹${penalty.amount}</span>
+            <li class="bg-gray-50 p-3 rounded-lg flex justify-between items-center border border-gray-200">
+                <span class="text-sm truncate mr-2 text-gray-700">${penalty.line}</span>
+                <span class="text-purple-600 font-semibold whitespace-nowrap">₹${penalty.amount}</span>
             </li>
         `;
     });
