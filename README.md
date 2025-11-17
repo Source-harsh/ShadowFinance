@@ -46,4 +46,17 @@ tesseract --version
 ```
 
 If `tesseract` reports a version, restart the Flask app and upload the PDF again. If you still see OCR warnings, ensure `pytesseract` is installed and the path is correct.
+
+If you cannot add Tesseract to your system PATH (or prefer not to), you can set an environment variable that points to the Tesseract executable. On Windows (PowerShell), run:
+
+```powershell
+setx TESSERACT_CMD "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+```
+
+Then reopen PowerShell and restart the Flask app. The app will read `TESSERACT_CMD` and configure `pytesseract` to use that path automatically.
+
+Alternative options if you do not want to install Tesseract:
+- Convert your scanned PDF to a text-based PDF using a desktop PDF tool before uploading.
+- Use an online OCR service and upload the resulting text instead of the PDF.
+- If you only want analysis for text-based PDFs, keep using the app without Tesseract; it will skip OCR and raise a helpful error for scanned PDFs.
 - This project stores uploaded PDFs in a temporary system file and removes them after processing.

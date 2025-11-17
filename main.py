@@ -19,6 +19,12 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__, static_folder='static')
 CORS(app)
 
+# Allow users to set the tesseract executable path using environment variable
+# Useful on Windows if tesseract isn't on PATH or uses a custom install location
+if os.environ.get('TESSERACT_CMD'):
+    pytesseract.pytesseract.tesseract_cmd = os.environ.get('TESSERACT_CMD')
+    logger.info(f"Using TESSERACT_CMD from env: {pytesseract.pytesseract.tesseract_cmd}")
+
 def extract_transactions(pdf_path):
     transactions = []
     # check if the system has Tesseract command available
