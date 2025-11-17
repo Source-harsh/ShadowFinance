@@ -99,6 +99,7 @@ function displayResults(data) {
     document.getElementById('categoriesCount').textContent = categoriesCount;
     
     displayTopMerchants(data.top_merchants);
+    displayCategorySpending(data.category_spending);
     displayCategorySummary(data.category_summary);
     displaySuggestions(data.suggestions);
     
@@ -130,6 +131,40 @@ function displayTopMerchants(merchants) {
                     </div>
                 </div>
                 <span class="text-blue-400 font-bold">₹${merchant.amount.toLocaleString('en-IN')}</span>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function displayCategorySpending(categories) {
+    const container = document.getElementById('categorySpending');
+    
+    if (categories.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 italic">No category data available</p>';
+        return;
+    }
+    
+    const categoryIcons = {
+        'Food': '🍔',
+        'Travel': '✈️',
+        'Shopping': '🛍️',
+        'Entertainment': '🎬',
+        'Subscriptions': '📱',
+        'Other': '📦'
+    };
+    
+    let html = '';
+    categories.forEach(cat => {
+        const icon = categoryIcons[cat.category] || '📦';
+        html += `
+            <div class="bg-black/30 p-3 rounded-lg flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">${icon}</span>
+                    <span class="font-semibold text-white">${cat.category}</span>
+                </div>
+                <span class="text-pink-400 font-bold">₹${cat.amount.toLocaleString('en-IN')}</span>
             </div>
         `;
     });

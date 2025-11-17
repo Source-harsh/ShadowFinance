@@ -64,6 +64,41 @@ def extract_merchant_name(line):
         return ' '.join(merchant_words)
     return None
 
+def categorize_transaction(line):
+    line_lower = line.lower()
+    
+    categories = {
+        'Food': ['restaurant', 'cafe', 'food', 'zomato', 'swiggy', 'dominos', 'pizza', 'mcdonald', 
+                 'kfc', 'burger', 'starbucks', 'subway', 'dining', 'eatery', 'kitchen', 'bakery'],
+        'Travel': ['uber', 'ola', 'rapido', 'taxi', 'metro', 'railway', 'irctc', 'flight', 'airline',
+                   'indigo', 'spicejet', 'makemytrip', 'goibibo', 'bus', 'fuel', 'petrol', 'diesel'],
+        'Shopping': ['amazon', 'flipkart', 'myntra', 'ajio', 'shopping', 'mall', 'store', 'retail',
+                     'mart', 'supermarket', 'grocery', 'fashion', 'clothing', 'bigbasket'],
+        'Entertainment': ['netflix', 'prime', 'hotstar', 'disney', 'spotify', 'youtube', 'movie',
+                         'cinema', 'theatre', 'pvr', 'inox', 'game', 'gaming', 'steam'],
+        'Subscriptions': ['subscription', 'membership', 'monthly', 'yearly', 'renewal', 'premium',
+                         'plan', 'recharge', 'recurring']
+    }
+    
+    for category, keywords in categories.items():
+        if any(keyword in line_lower for keyword in keywords):
+            return category
+    
+    return 'Other'
+
+def remove_duplicates(transactions):
+    seen = set()
+    unique_transactions = []
+    
+    for trans in transactions:
+        trans_key = (trans.get('line', '').strip(), trans.get('amount', 0))
+        
+        if trans_key not in seen and trans_key[0]:
+            seen.add(trans_key)
+            unique_transactions.append(trans)
+    
+    return unique_transactions
+
 def detect_leaks(transactions):
     repeating_charges = []
     micro_transactions = []
@@ -166,11 +201,28 @@ def detect_leaks(transactions):
             counted_lines.add(item['idx'])
     
     for item in micro_transactions:
+        item['category'] = categorize_transaction(item['line'])
         del item['idx']
     for item in fees:
+        item['category'] = categorize_transaction(item['line'])
         del item['idx']
     for item in penalties:
+        item['category'] = categorize_transaction(item['line'])
         del item['idx']
+    
+    micro_transactions = remove_duplicates(micro_transactions)
+    fees = remove_duplicates(fees)
+    penalties = remove_duplicates(penalties)
+    
+    category_spending = {'Food': 0, 'Travel': 0, 'Shopping': 0, 'Entertainment': 0, 'Subscriptions': 0, 'Other': 0}
+    
+    for item in micro_transactions + fees + penalties:
+        category = item.get('category', 'Other')
+        category_spending[category] += item['amount']
+    
+    for charge in repeating_charges:
+        category = categorize_transaction(charge['merchant'])
+        category_spending[category] += charge['total']
     
     top_merchants = sorted(
         [(merchant, merchant_amounts[merchant], merchant_counts[merchant]) 
@@ -215,10 +267,17 @@ def detect_leaks(transactions):
     if not suggestions:
         suggestions.append("Good job! Your spending looks relatively clean. Keep monitoring regularly.")
     
+    category_spending_list = [
+        {'category': cat, 'amount': round(amt, 2)}
+        for cat, amt in sorted(category_spending.items(), key=lambda x: x[1], reverse=True)
+        if amt > 0
+    ]
+    
     return {
         'transaction_count': transaction_count,
         'top_merchants': top_merchants_list,
         'category_summary': category_summary,
+        'category_spending': category_spending_list,
         'suggestions': suggestions,
         'repeating_charges': repeating_charges,
         'micro_transactions': micro_transactions,
