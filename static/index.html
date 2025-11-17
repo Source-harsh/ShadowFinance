@@ -120,6 +120,29 @@
         <div id="error" class="hidden bg-red-500/20 border border-red-500 rounded-xl p-6 mt-6">
             <p class="text-red-300" id="errorMessage"></p>
         </div>
+
+        <div class="bg-white/10 backdrop-blur-lg rounded-xl shadow-xl overflow-hidden mt-8">
+            <button class="w-full p-6 text-left hover:bg-white/5 transition-colors flex items-center justify-between" onclick="toggleSection('doubts')">
+                <h3 class="text-xl font-bold flex items-center">
+                    <span class="bg-green-500 rounded-full w-3 h-3 mr-2"></span>
+                    Doubts and Queries
+                </h3>
+                <svg class="w-6 h-6 transform transition-transform" id="doubtsIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div id="doubtsContent" class="max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                <div class="px-6 pb-6">
+                    <div class="mb-4">
+                        <textarea id="doubtInput" class="w-full bg-black/30 text-white rounded-lg p-3 border border-purple-400/30 focus:border-purple-400 focus:outline-none resize-none" rows="3" placeholder="Ask your doubt or query here..."></textarea>
+                        <button onclick="addDoubt()" class="mt-2 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white font-semibold py-2 px-6 rounded-lg transition-all">
+                            Add Doubt
+                        </button>
+                    </div>
+                    <div id="doubtsList" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>

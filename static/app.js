@@ -222,3 +222,82 @@ function toggleSection(sectionName) {
         icon.style.transform = 'rotate(180deg)';
     }
 }
+
+function loadDoubts() {
+    const doubts = JSON.parse(localStorage.getItem('doubts') || '[]');
+    displayDoubts(doubts);
+}
+
+function displayDoubts(doubts) {
+    const doubtsList = document.getElementById('doubtsList');
+    
+    if (doubts.length === 0) {
+        doubtsList.innerHTML = '<p class="text-gray-400 italic">No doubts added yet</p>';
+        return;
+    }
+    
+    let html = '';
+    doubts.forEach((doubt, index) => {
+        html += `
+            <div class="bg-black/30 p-4 rounded-lg flex items-start gap-3">
+                <button onclick="toggleDoubtResolved(${index})" class="flex-shrink-0 mt-1">
+                    ${doubt.resolved 
+                        ? '<svg class="w-6 h-6 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>'
+                        : '<svg class="w-6 h-6 text-gray-400 hover:text-green-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"></circle></svg>'
+                    }
+                </button>
+                <div class="flex-grow ${doubt.resolved ? 'opacity-60' : ''}">
+                    <p class="text-white ${doubt.resolved ? 'line-through' : ''}">${doubt.text}</p>
+                    <p class="text-xs text-gray-400 mt-1">${new Date(doubt.timestamp).toLocaleString()}</p>
+                </div>
+                <button onclick="removeDoubt(${index})" class="flex-shrink-0 text-red-400 hover:text-red-300 transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+    });
+    
+    doubtsList.innerHTML = html;
+}
+
+function addDoubt() {
+    const input = document.getElementById('doubtInput');
+    const text = input.value.trim();
+    
+    if (!text) {
+        alert('Please enter a doubt or query');
+        return;
+    }
+    
+    const doubts = JSON.parse(localStorage.getItem('doubts') || '[]');
+    doubts.push({
+        text: text,
+        timestamp: new Date().toISOString(),
+        resolved: false
+    });
+    
+    localStorage.setItem('doubts', JSON.stringify(doubts));
+    input.value = '';
+    displayDoubts(doubts);
+    
+    const content = document.getElementById('doubtsContent');
+    content.style.maxHeight = content.scrollHeight + 'px';
+}
+
+function toggleDoubtResolved(index) {
+    const doubts = JSON.parse(localStorage.getItem('doubts') || '[]');
+    doubts[index].resolved = !doubts[index].resolved;
+    localStorage.setItem('doubts', JSON.stringify(doubts));
+    displayDoubts(doubts);
+}
+
+function removeDoubt(index) {
+    const doubts = JSON.parse(localStorage.getItem('doubts') || '[]');
+    doubts.splice(index, 1);
+    localStorage.setItem('doubts', JSON.stringify(doubts));
+    displayDoubts(doubts);
+}
+
+loadDoubts();
