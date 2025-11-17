@@ -5,6 +5,9 @@ import pytesseract
 import re
 import os
 import logging
+import tempfile
+from werkzeug.utils import secure_filename
+import uuid
 
 logging.basicConfig(
     level=logging.INFO,
@@ -314,19 +317,32 @@ def analyze():
         logger.warning("Empty filename")
         return jsonify({'error': 'No file selected'}), 400
     
-    if not file.filename.endswith('.pdf'):
+    if not file.filename.lower().endswith('.pdf'):
         logger.warning(f"Invalid file type: {file.filename}")
         return jsonify({'error': 'Only PDF files are allowed'}), 400
+
+    safe_name = secure_filename(file.filename)
+    # Save to system temp directory in a unique temp file
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=f"_{uuid.uuid4().hex}_{safe_name}")
+    try:
+        temp_path = temp_file.name
+        logger.info(f"Saving file to: {temp_path}")
+        # close so Werkzeug can write to the same file on Windows
+        temp_file.close()
+        file.save(temp_path)
     
-    temp_path = '/tmp/uploaded.pdf'
-    logger.info(f"Saving file to: {temp_path}")
-    file.save(temp_path)
-    
-    logger.info("Extracting transactions from PDF...")
-    transactions = extract_transactions(temp_path)
-    
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
+        logger.info("Extracting transactions from PDF...")
+        transactions = extract_transactions(temp_path)
+    except Exception as e:
+        logger.error("Error handling uploaded file", exc_info=True)
+        return jsonify({'error': 'Failed to process uploaded file'}), 500
+    finally:
+        # cleanup
+        try:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+        except Exception:
+            logger.warning("Failed to remove temporary file", exc_info=True)
     
     if not transactions:
         logger.error("No transactions extracted from PDF")
