@@ -11,13 +11,19 @@ def extract_transactions(pdf_path):
     transactions = []
     try:
         with pdfplumber.open(pdf_path) as pdf:
-            for page in pdf.pages:
+            print(f"PDF opened successfully. Total pages: {len(pdf.pages)}")
+            for page_num, page in enumerate(pdf.pages, 1):
                 text = page.extract_text()
+                print(f"Page {page_num} text length: {len(text) if text else 0}")
                 if text:
                     lines = text.split('\n')
                     transactions.extend(lines)
+                    print(f"Page {page_num} extracted {len(lines)} lines")
+            print(f"Total transactions extracted: {len(transactions)}")
     except Exception as e:
         print(f"Error extracting PDF: {e}")
+        import traceback
+        traceback.print_exc()
     return transactions
 
 def extract_merchant_name(line):
@@ -154,28 +160,36 @@ def serve_js():
 @app.route('/analyze', methods=['POST'])
 def analyze():
     if 'file' not in request.files:
+        print("Error: No file in request")
         return jsonify({'error': 'No file uploaded'}), 400
     
     file = request.files['file']
     
     if file.filename == '':
+        print("Error: Empty filename")
         return jsonify({'error': 'No file selected'}), 400
     
     if not file.filename.endswith('.pdf'):
+        print(f"Error: Invalid file type: {file.filename}")
         return jsonify({'error': 'Only PDF files are allowed'}), 400
     
     temp_path = '/tmp/uploaded.pdf'
+    print(f"Saving file to: {temp_path}")
     file.save(temp_path)
     
+    print("Extracting transactions from PDF...")
     transactions = extract_transactions(temp_path)
     
     if os.path.exists(temp_path):
         os.remove(temp_path)
     
     if not transactions:
-        return jsonify({'error': 'Could not extract text from PDF'}), 400
+        print("Error: No transactions extracted from PDF")
+        return jsonify({'error': 'Could not extract text from PDF. The PDF might be scanned/image-based or empty. Please upload a text-based PDF bank statement.'}), 400
     
+    print(f"Analyzing {len(transactions)} transactions...")
     results = detect_leaks(transactions)
+    print(f"Analysis complete. Found {len(results['repeating_charges'])} repeating charges, {len(results['micro_transactions'])} micro transactions")
     
     return jsonify(results)
 
