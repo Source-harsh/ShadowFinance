@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import pdfplumber
 import pytesseract
+import shutil
 import re
 import os
 import logging
@@ -20,6 +21,10 @@ CORS(app)
 
 def extract_transactions(pdf_path):
     transactions = []
+    # check if the system has Tesseract command available
+    tesseract_available = shutil.which('tesseract') is not None
+    if not tesseract_available:
+        logger.debug("Tesseract command not found in PATH; OCR won't be available.")
     try:
         with pdfplumber.open(pdf_path) as pdf:
             logger.info(f"PDF opened successfully. Total pages: {len(pdf.pages)}")
@@ -29,12 +34,17 @@ def extract_transactions(pdf_path):
                 if not text or len(text.strip()) < 10:
                     logger.info(f"Page {page_num}: No text found, trying OCR...")
                     try:
+                        if not tesseract_available:
+                            raise EnvironmentError("tesseract is not installed or it's not in your PATH")
                         img = page.to_image(resolution=300)
                         pil_image = img.original
                         text = pytesseract.image_to_string(pil_image)
                         logger.info(f"Page {page_num}: OCR extracted {len(text)} characters")
                     except Exception as ocr_error:
-                        logger.warning(f"Page {page_num}: OCR failed: {ocr_error}")
+                        logger.warning(
+                            f"Page {page_num}: OCR failed: {ocr_error}. "
+                            "If your PDF is scanned or contains images, install Tesseract to enable OCR (see README)."
+                        )
                         text = ""
                 else:
                     logger.info(f"Page {page_num}: Regular extraction got {len(text)} characters")

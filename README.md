@@ -27,4 +27,23 @@ python main.py
 
 ## Notes
 - For OCR on Windows, ensure you have Tesseract installed and `pytesseract` configured with the correct path.
+ - For OCR on Windows, ensure you have Tesseract installed and `pytesseract` configured with the correct path.
+
+Installing Tesseract on Windows (recommended):
+
+1. Download the Tesseract installer from https://github.com/tesseract-ocr/tesseract/releases and run it.
+2. During install, note the install directory (default: C:\Program Files\Tesseract-OCR).
+3. Add the installation folder to your PATH: open PowerShell as Admin and run:
+
+```powershell
+setx PATH "$($env:PATH);C:\\Program Files\\Tesseract-OCR"
+```
+
+4. Close and reopen PowerShell/terminal and verify:
+
+```powershell
+tesseract --version
+```
+
+If `tesseract` reports a version, restart the Flask app and upload the PDF again. If you still see OCR warnings, ensure `pytesseract` is installed and the path is correct.
 - This project stores uploaded PDFs in a temporary system file and removes them after processing.
