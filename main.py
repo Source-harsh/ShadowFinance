@@ -4,6 +4,13 @@ import pdfplumber
 import pytesseract
 import re
 import os
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
@@ -12,33 +19,31 @@ def extract_transactions(pdf_path):
     transactions = []
     try:
         with pdfplumber.open(pdf_path) as pdf:
-            print(f"PDF opened successfully. Total pages: {len(pdf.pages)}")
+            logger.info(f"PDF opened successfully. Total pages: {len(pdf.pages)}")
             for page_num, page in enumerate(pdf.pages, 1):
                 text = page.extract_text()
                 
                 if not text or len(text.strip()) < 10:
-                    print(f"Page {page_num}: No text found, trying OCR...")
+                    logger.info(f"Page {page_num}: No text found, trying OCR...")
                     try:
                         img = page.to_image(resolution=300)
                         pil_image = img.original
                         text = pytesseract.image_to_string(pil_image)
-                        print(f"Page {page_num}: OCR extracted {len(text)} characters")
+                        logger.info(f"Page {page_num}: OCR extracted {len(text)} characters")
                     except Exception as ocr_error:
-                        print(f"Page {page_num}: OCR failed: {ocr_error}")
+                        logger.warning(f"Page {page_num}: OCR failed: {ocr_error}")
                         text = ""
                 else:
-                    print(f"Page {page_num}: Regular extraction got {len(text)} characters")
+                    logger.info(f"Page {page_num}: Regular extraction got {len(text)} characters")
                 
                 if text:
                     lines = text.split('\n')
                     transactions.extend(lines)
-                    print(f"Page {page_num}: Added {len(lines)} lines")
+                    logger.debug(f"Page {page_num}: Added {len(lines)} lines")
             
-            print(f"Total transactions extracted: {len(transactions)}")
+            logger.info(f"Total transactions extracted: {len(transactions)}")
     except Exception as e:
-        print(f"Error extracting PDF: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Error extracting PDF: {e}", exc_info=True)
     return transactions
 
 def extract_merchant_name(line):
@@ -233,36 +238,36 @@ def serve_js():
 @app.route('/analyze', methods=['POST'])
 def analyze():
     if 'file' not in request.files:
-        print("Error: No file in request")
+        logger.warning("No file in request")
         return jsonify({'error': 'No file uploaded'}), 400
     
     file = request.files['file']
     
     if file.filename == '':
-        print("Error: Empty filename")
+        logger.warning("Empty filename")
         return jsonify({'error': 'No file selected'}), 400
     
     if not file.filename.endswith('.pdf'):
-        print(f"Error: Invalid file type: {file.filename}")
+        logger.warning(f"Invalid file type: {file.filename}")
         return jsonify({'error': 'Only PDF files are allowed'}), 400
     
     temp_path = '/tmp/uploaded.pdf'
-    print(f"Saving file to: {temp_path}")
+    logger.info(f"Saving file to: {temp_path}")
     file.save(temp_path)
     
-    print("Extracting transactions from PDF...")
+    logger.info("Extracting transactions from PDF...")
     transactions = extract_transactions(temp_path)
     
     if os.path.exists(temp_path):
         os.remove(temp_path)
     
     if not transactions:
-        print("Error: No transactions extracted from PDF")
+        logger.error("No transactions extracted from PDF")
         return jsonify({'error': 'Could not extract text from PDF. The PDF might be scanned/image-based or empty. Please upload a text-based PDF bank statement.'}), 400
     
-    print(f"Analyzing {len(transactions)} transactions...")
+    logger.info(f"Analyzing {len(transactions)} transactions...")
     results = detect_leaks(transactions)
-    print(f"Analysis complete. Found {len(results['repeating_charges'])} repeating charges, {len(results['micro_transactions'])} micro transactions")
+    logger.info(f"Analysis complete. Found {len(results['repeating_charges'])} repeating charges, {len(results['micro_transactions'])} micro transactions")
     
     return jsonify(results)
 
