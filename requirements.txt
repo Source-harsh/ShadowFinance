@@ -6,3 +6,8 @@ flask-cors
 pdfplumber
 pdf2image
 pytesseract
+flask
+flask-cors
+pdf2image
+pdfplumber
+pytesseract
