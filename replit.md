@@ -13,6 +13,8 @@ Fully functional MVP with PDF upload, text extraction, pattern detection, and re
 - Added detection algorithms for 4 types of financial leaks
 - Created responsive UI with Tailwind CSS
 - Configured Flask server on port 5000 for Replit webview
+- Improved merchant name extraction with date filtering to avoid false matches
+- Fixed total waste calculation to prevent double-counting overlapping categories
 
 ## Project Architecture
 
