@@ -11,6 +11,8 @@ function toggleSection(sectionId) {
     }
 }
 
+let analysisResults = null; // Global variable to store results for AI context
+
 function loadResults() {
     const dataStr = sessionStorage.getItem('analysisResults');
     
@@ -19,8 +21,8 @@ function loadResults() {
         return;
     }
     
-    const data = JSON.parse(dataStr);
-    displayResults(data);
+    analysisResults = JSON.parse(dataStr); // Store globally for AI
+    displayResults(analysisResults);
 }
 
 function displayResults(data) {
@@ -44,8 +46,6 @@ function displayResults(data) {
     displayMicroTransactions(data.micro_transactions);
     displayFees(data.fees);
     displayPenalties(data.penalties);
-    
-    loadDoubts();
 }
 
 function displayTopMerchants(merchants) {
@@ -262,65 +262,89 @@ function displayPenalties(penalties) {
     container.innerHTML = html;
 }
 
-function addDoubt() {
-    const input = document.getElementById('doubtInput');
-    const doubt = input.value.trim();
+async function askAI() {
+    const input = document.getElementById('aiInput');
+    const button = document.getElementById('askButton');
+    const query = input.value.trim();
     
-    if (!doubt) {
+    if (!query || !analysisResults) {
         return;
     }
     
-    const doubts = getDoubts();
-    doubts.push({
-        id: Date.now(),
-        text: doubt,
-        timestamp: new Date().toLocaleString()
-    });
+    // Disable input while processing
+    input.disabled = true;
+    button.disabled = true;
+    button.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Thinking...';
     
-    localStorage.setItem('doubts', JSON.stringify(doubts));
+    // Display user message
+    displayChatMessage(query, 'user');
     input.value = '';
-    loadDoubts();
-}
-
-function getDoubts() {
-    const doubtsStr = localStorage.getItem('doubts');
-    return doubtsStr ? JSON.parse(doubtsStr) : [];
-}
-
-function loadDoubts() {
-    const doubts = getDoubts();
-    const container = document.getElementById('doubtsList');
     
-    if (doubts.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 italic text-sm">No queries added yet</p>';
-        return;
+    try {
+        const response = await fetch('/ask-ai', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: query,
+                results: analysisResults
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.answer) {
+            displayChatMessage(data.answer, 'ai');
+        } else if (data.error) {
+            displayChatMessage('Sorry, I encountered an error. Please try again.', 'ai', true);
+        }
+    } catch (error) {
+        console.error('Error asking AI:', error);
+        displayChatMessage('Sorry, I could not connect to the AI service. Please try again later.', 'ai', true);
+    } finally {
+        // Re-enable input
+        input.disabled = false;
+        button.disabled = false;
+        button.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Ask AI';
     }
+}
+
+function displayChatMessage(message, sender, isError = false) {
+    const chatHistory = document.getElementById('chatHistory');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'flex gap-3 animate-fadeIn';
     
-    let html = '';
-    doubts.forEach(doubt => {
-        html += `
-            <div class="bg-black/30 p-4 rounded-lg">
-                <div class="flex justify-between items-start mb-2">
-                    <p class="text-white flex-1">${doubt.text}</p>
-                    <button onclick="removeDoubt(${doubt.id})" class="text-red-400 hover:text-red-300 ml-4">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-                <p class="text-xs text-gray-500">${doubt.timestamp}</p>
+    if (sender === 'user') {
+        messageDiv.innerHTML = `
+            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-semibold text-sm">
+                You
+            </div>
+            <div class="flex-1 bg-emerald-50 text-gray-800 p-3 rounded-lg border border-emerald-200">
+                <p class="text-sm">${escapeHtml(message)}</p>
             </div>
         `;
-    });
+    } else {
+        const bgClass = isError ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200';
+        const iconClass = isError ? 'bg-red-500' : 'bg-gradient-to-br from-purple-500 to-pink-600';
+        messageDiv.innerHTML = `
+            <div class="flex-shrink-0 w-8 h-8 rounded-full ${iconClass} flex items-center justify-center text-white text-sm">
+                🤖
+            </div>
+            <div class="flex-1 ${bgClass} text-gray-800 p-3 rounded-lg border">
+                <p class="text-sm whitespace-pre-wrap">${escapeHtml(message)}</p>
+            </div>
+        `;
+    }
     
-    container.innerHTML = html;
+    chatHistory.appendChild(messageDiv);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
 }
 
-function removeDoubt(id) {
-    const doubts = getDoubts();
-    const filtered = doubts.filter(d => d.id !== id);
-    localStorage.setItem('doubts', JSON.stringify(filtered));
-    loadDoubts();
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 window.addEventListener('load', loadResults);

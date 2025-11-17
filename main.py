@@ -9,6 +9,12 @@ import logging
 import tempfile
 from werkzeug.utils import secure_filename
 import uuid
+import json
+import requests
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,6 +24,10 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
+
+# NVIDIA AI Configuration
+NVIDIA_API_KEY = os.environ.get('NVIDIA_API_KEY')
+NVIDIA_API_URL = "https://integrate.api.nvidia.com/v1/chat/completions"
 
 # Allow users to set the tesseract executable path using environment variable
 # Useful on Windows if tesseract isn't on PATH or uses a custom install location
@@ -293,17 +303,16 @@ def detect_leaks(transactions):
         }
     }
     
-    suggestions = []
-    if len(repeating_charges) > 0:
-        suggestions.append("Review your recurring subscriptions - you might be paying for services you no longer use.")
-    if len(fees) > 3:
-        suggestions.append("Consider switching to a bank account with lower or no fees.")
-    if len(penalties) > 0:
-        suggestions.append("Set up automatic payments to avoid late fees and interest charges.")
-    if len(micro_transactions) > 10:
-        suggestions.append("Small purchases add up! Try tracking your daily spending more carefully.")
-    if not suggestions:
-        suggestions.append("Good job! Your spending looks relatively clean. Keep monitoring regularly.")
+    # Generate AI-powered suggestions
+    suggestions = generate_ai_suggestions(
+        repeating_charges=repeating_charges,
+        micro_transactions=micro_transactions,
+        fees=fees,
+        penalties=penalties,
+        category_spending=category_spending,
+        total_waste=total_waste,
+        transaction_count=transaction_count
+    )
     
     category_spending_list = [
         {'category': cat, 'amount': round(amt, 2)}
@@ -388,6 +397,144 @@ def analyze():
     logger.info(f"Analysis complete. Found {len(results['repeating_charges'])} repeating charges, {len(results['micro_transactions'])} micro transactions")
     
     return jsonify(results)
+
+def generate_ai_suggestions(repeating_charges, micro_transactions, fees, penalties, category_spending, total_waste, transaction_count):
+    """Use NVIDIA Llama to generate personalized financial suggestions"""
+    
+    if not NVIDIA_API_KEY:
+        # Fallback to rule-based suggestions if no API key
+        logger.warning("NVIDIA_API_KEY not set, using rule-based suggestions")
+        suggestions = []
+        if len(repeating_charges) > 0:
+            suggestions.append("Review your recurring subscriptions - you might be paying for services you no longer use.")
+        if len(fees) > 3:
+            suggestions.append("Consider switching to a bank account with lower or no fees.")
+        if len(penalties) > 0:
+            suggestions.append("Set up automatic payments to avoid late fees and interest charges.")
+        if len(micro_transactions) > 10:
+            suggestions.append("Small purchases add up! Try tracking your daily spending more carefully.")
+        if not suggestions:
+            suggestions.append("Good job! Your spending looks relatively clean. Keep monitoring regularly.")
+        return suggestions
+    
+    try:
+        # Prepare data summary for AI
+        top_categories = sorted(category_spending.items(), key=lambda x: x[1], reverse=True)[:3]
+        top_cat_str = ", ".join([f"{cat}: ₹{amt:.0f}" for cat, amt in top_categories if amt > 0])
+        
+        prompt = f"""You are a financial advisor. Analyze this user's spending and provide 3-4 specific, actionable suggestions to save money.
+
+Financial Data:
+- Total Transactions: {transaction_count}
+- Money Wasted: ₹{total_waste:.2f}
+- Repeating Charges: {len(repeating_charges)} merchants (totaling ₹{sum(c['total'] for c in repeating_charges):.2f})
+- Micro-Transactions (₹20-200): {len(micro_transactions)} items
+- Bank Fees: {len(fees)} charges
+- Penalties/Interest: {len(penalties)} charges
+- Top Spending Categories: {top_cat_str}
+
+Provide practical, specific suggestions. Be encouraging but direct. Format as bullet points."""
+
+        headers = {
+            "Authorization": f"Bearer {NVIDIA_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        data = {
+            "model": "meta/llama-3.1-8b-instruct",
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.7,
+            "max_tokens": 400,
+            "top_p": 1,
+            "stream": False
+        }
+        
+        response = requests.post(NVIDIA_API_URL, headers=headers, json=data, timeout=10)
+        
+        if response.status_code == 200:
+            ai_response = response.json()['choices'][0]['message']['content']
+            # Parse bullet points into list
+            suggestions = [line.strip('- •').strip() for line in ai_response.split('\n') if line.strip() and (line.strip().startswith('-') or line.strip().startswith('•'))]
+            if not suggestions:  # If no bullet points, split by newlines
+                suggestions = [s.strip() for s in ai_response.split('\n') if s.strip()]
+            logger.info(f"Generated {len(suggestions)} AI suggestions")
+            return suggestions[:5]  # Limit to 5 suggestions
+        else:
+            logger.error(f"NVIDIA API error: {response.status_code} - {response.text}")
+            raise Exception("AI API failed")
+            
+    except Exception as e:
+        logger.error(f"Error generating AI suggestions: {e}")
+        # Fallback to rule-based
+        suggestions = []
+        if len(repeating_charges) > 0:
+            suggestions.append("Review your recurring subscriptions - you might be paying for services you no longer use.")
+        if len(fees) > 3:
+            suggestions.append("Consider switching to a bank account with lower or no fees.")
+        if len(penalties) > 0:
+            suggestions.append("Set up automatic payments to avoid late fees and interest charges.")
+        if len(micro_transactions) > 10:
+            suggestions.append("Small purchases add up! Try tracking your daily spending more carefully.")
+        if not suggestions:
+            suggestions.append("Good job! Your spending looks relatively clean. Keep monitoring regularly.")
+        return suggestions
+
+@app.route('/ask-ai', methods=['POST'])
+def ask_ai():
+    """AI-powered financial assistant endpoint"""
+    
+    if not NVIDIA_API_KEY:
+        return jsonify({'error': 'AI service not configured'}), 503
+    
+    try:
+        data = request.json
+        user_query = data.get('query', '').strip()
+        analysis_data = data.get('results', {})
+        
+        if not user_query:
+            return jsonify({'error': 'Query is required'}), 400
+        
+        # Prepare context from analysis data
+        context = f"""Transaction Analysis:
+- Total Transactions: {analysis_data.get('transaction_count', 0)}
+- Money Wasted: ₹{analysis_data.get('total_waste', 0)}
+- Repeating Charges: {len(analysis_data.get('repeating_charges', []))} items
+- Micro-Transactions: {len(analysis_data.get('micro_transactions', []))} items
+- Fees: {len(analysis_data.get('fees', []))} items
+- Penalties: {len(analysis_data.get('penalties', []))} items
+
+Top Merchants: {', '.join([m['name'] for m in analysis_data.get('top_merchants', [])[:3]])}
+
+User Question: {user_query}
+
+Provide a helpful, specific answer with numbers from the data. Be conversational and encouraging."""
+
+        headers = {
+            "Authorization": f"Bearer {NVIDIA_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": "meta/llama-3.1-8b-instruct",
+            "messages": [{"role": "user", "content": context}],
+            "temperature": 0.7,
+            "max_tokens": 500,
+            "top_p": 1,
+            "stream": False
+        }
+        
+        response = requests.post(NVIDIA_API_URL, headers=headers, json=payload, timeout=15)
+        
+        if response.status_code == 200:
+            ai_answer = response.json()['choices'][0]['message']['content']
+            return jsonify({'answer': ai_answer})
+        else:
+            logger.error(f"NVIDIA API error: {response.status_code} - {response.text}")
+            return jsonify({'error': 'AI service unavailable'}), 503
+            
+    except Exception as e:
+        logger.error(f"Error in ask-ai endpoint: {e}", exc_info=True)
+        return jsonify({'error': 'Failed to process AI request'}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

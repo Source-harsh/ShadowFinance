@@ -1,13 +1,7 @@
 flask
 flask-cors
 pdfplumber
-flask
-flask-cors
-pdfplumber
 pdf2image
 pytesseract
-flask
-flask-cors
-pdf2image
-pdfplumber
-pytesseract
+requests
+python-dotenv
