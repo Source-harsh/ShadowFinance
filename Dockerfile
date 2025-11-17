@@ -22,4 +22,4 @@ ENV PORT=10000
 EXPOSE 10000
 
 # Start the app
-CMD ["gunicorn", "main:app", "--bind", "0.0.0.0:10000","--timeout","120"]
+CMD ["gunicorn", "main:app", "--bind", "0.0.0.0:10000","--timeout","120","--workers",2]
