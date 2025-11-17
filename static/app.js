@@ -62,7 +62,6 @@ analyzeBtn.addEventListener('click', async () => {
     
     loading.classList.remove('hidden');
     results.classList.add('hidden');
-    error.classList.add('hidden');
     analyzeBtn.disabled = true;
     
     try {
@@ -77,10 +76,10 @@ analyzeBtn.addEventListener('click', async () => {
             throw new Error(data.error || 'Analysis failed');
         }
         
-        displayResults(data);
+        sessionStorage.setItem('analysisResults', JSON.stringify(data));
+        window.location.href = '/dashboard';
     } catch (err) {
         showError(err.message);
-    } finally {
         loading.classList.add('hidden');
         analyzeBtn.disabled = false;
     }

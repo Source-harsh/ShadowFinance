@@ -290,9 +290,17 @@ def detect_leaks(transactions):
 def index():
     return send_from_directory('static', 'index.html')
 
+@app.route('/dashboard')
+def dashboard():
+    return send_from_directory('static', 'dashboard.html')
+
 @app.route('/app.js')
 def serve_js():
     return send_from_directory('static', 'app.js')
+
+@app.route('/dashboard.js')
+def serve_dashboard_js():
+    return send_from_directory('static', 'dashboard.js')
 
 @app.route('/analyze', methods=['POST'])
 def analyze():

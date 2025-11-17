@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ShadowFinance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-purple-900 via-blue-900 to-black min-h-screen text-white">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    ShadowFinance Dashboard
+                </h1>
+                <p class="text-gray-400 mt-2">Your Financial Analysis Results</p>
+            </div>
+            <a href="/" class="bg-purple-500 hover:bg-purple-600 px-6 py-3 rounded-lg font-semibold transition-colors">
+                ← New Analysis
+            </a>
+        </div>
+
+        <div id="dashboardContent">
+            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl mb-6">
+                <h2 class="text-3xl font-bold mb-6 text-center">
+                    Total Money Wasted: <span id="totalWaste" class="text-red-400">₹0</span>
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-black/30 p-4 rounded-lg">
+                        <p class="text-sm text-gray-400">Total Transactions</p>
+                        <p class="text-2xl font-bold text-white" id="transactionCount">0</p>
+                    </div>
+                    <div class="bg-black/30 p-4 rounded-lg">
+                        <p class="text-sm text-gray-400">Categories Detected</p>
+                        <p class="text-2xl font-bold text-white" id="categoriesCount">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white/10 backdrop-blur-lg rounded-xl p-6 shadow-xl">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <span class="bg-blue-500 rounded-full w-3 h-3 mr-2"></span>
+                        Top Merchants by Spending
+                    </h3>
+                    <div id="topMerchants" class="space-y-2"></div>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-lg rounded-xl p-6 shadow-xl">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <span class="bg-pink-500 rounded-full w-3 h-3 mr-2"></span>
+                        Spending by Category
+                    </h3>
+                    <div id="categorySpending" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-lg rounded-xl p-6 shadow-xl mb-6">
+                <h3 class="text-xl font-bold mb-4 flex items-center">
+                    <span class="bg-indigo-500 rounded-full w-3 h-3 mr-2"></span>
+                    Summary by Category
+                </h3>
+                <div id="categorySummary" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+            </div>
+
+            <div class="bg-gradient-to-r from-green-500/20 to-teal-500/20 border border-green-500/30 rounded-xl p-6 shadow-xl mb-6">
+                <h3 class="text-xl font-bold mb-4 flex items-center text-green-300">
+                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    Suggestions
+                </h3>
+                <ul id="suggestions" class="space-y-2"></ul>
+            </div>
+
+            <div class="grid gap-6">
+                <div class="bg-white/10 backdrop-blur-lg rounded-xl shadow-xl overflow-hidden">
+                    <button class="w-full p-6 text-left hover:bg-white/5 transition-colors flex items-center justify-between" onclick="toggleSection('repeatingCharges')">
+                        <h3 class="text-xl font-bold flex items-center">
+                            <span class="bg-red-500 rounded-full w-3 h-3 mr-2"></span>
+                            Repeating Charges
+                        </h3>
+                        <svg class="w-6 h-6 transform transition-transform" id="repeatingChargesIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="repeatingChargesContent" class="max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                        <div class="px-6 pb-6">
+                            <div id="repeatingCharges" class="text-gray-300"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-lg rounded-xl shadow-xl overflow-hidden">
+                    <button class="w-full p-6 text-left hover:bg-white/5 transition-colors flex items-center justify-between" onclick="toggleSection('microTransactions')">
+                        <h3 class="text-xl font-bold flex items-center">
+                            <span class="bg-yellow-500 rounded-full w-3 h-3 mr-2"></span>
+                            Micro Transactions (₹20-₹200)
+                        </h3>
+                        <svg class="w-6 h-6 transform transition-transform" id="microTransactionsIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="microTransactionsContent" class="max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                        <div class="px-6 pb-6">
+                            <div id="microTransactions" class="text-gray-300"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-lg rounded-xl shadow-xl overflow-hidden">
+                    <button class="w-full p-6 text-left hover:bg-white/5 transition-colors flex items-center justify-between" onclick="toggleSection('fees')">
+                        <h3 class="text-xl font-bold flex items-center">
+                            <span class="bg-orange-500 rounded-full w-3 h-3 mr-2"></span>
+                            Fees & Charges
+                        </h3>
+                        <svg class="w-6 h-6 transform transition-transform" id="feesIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="feesContent" class="max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                        <div class="px-6 pb-6">
+                            <div id="fees" class="text-gray-300"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-lg rounded-xl shadow-xl overflow-hidden">
+                    <button class="w-full p-6 text-left hover:bg-white/5 transition-colors flex items-center justify-between" onclick="toggleSection('penalties')">
+                        <h3 class="text-xl font-bold flex items-center">
+                            <span class="bg-purple-500 rounded-full w-3 h-3 mr-2"></span>
+                            Penalties
+                        </h3>
+                        <svg class="w-6 h-6 transform transition-transform" id="penaltiesIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="penaltiesContent" class="max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                        <div class="px-6 pb-6">
+                            <div id="penalties" class="text-gray-300"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-lg rounded-xl p-6 shadow-xl mt-6">
+                <h3 class="text-xl font-bold mb-4 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+                    </svg>
+                    Doubts and Queries
+                </h3>
+                <div id="doubtsSection">
+                    <div class="mb-4">
+                        <textarea id="doubtInput" class="w-full bg-black/30 text-white p-3 rounded-lg border border-purple-500/30 focus:border-purple-500 focus:outline-none resize-none" rows="3" placeholder="Write your doubts or queries about the analysis..."></textarea>
+                    </div>
+                    <button onclick="addDoubt()" class="bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded-lg font-semibold transition-colors mb-4">
+                        Add Query
+                    </button>
+                    <div id="doubtsList" class="space-y-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/dashboard.js"></script>
+</body>
+</html>
