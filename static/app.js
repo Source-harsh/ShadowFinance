@@ -88,6 +88,19 @@ analyzeBtn.addEventListener('click', async () => {
 
 function displayResults(data) {
     document.getElementById('totalWaste').textContent = `₹${data.total_waste.toLocaleString('en-IN')}`;
+    document.getElementById('transactionCount').textContent = data.transaction_count;
+    
+    const categoriesCount = [
+        data.category_summary.repeating_charges.count > 0,
+        data.category_summary.micro_transactions.count > 0,
+        data.category_summary.fees.count > 0,
+        data.category_summary.penalties.count > 0
+    ].filter(Boolean).length;
+    document.getElementById('categoriesCount').textContent = categoriesCount;
+    
+    displayTopMerchants(data.top_merchants);
+    displayCategorySummary(data.category_summary);
+    displaySuggestions(data.suggestions);
     
     displayRepeatingCharges(data.repeating_charges);
     displayMicroTransactions(data.micro_transactions);
@@ -95,6 +108,75 @@ function displayResults(data) {
     displayPenalties(data.penalties);
     
     results.classList.remove('hidden');
+}
+
+function displayTopMerchants(merchants) {
+    const container = document.getElementById('topMerchants');
+    
+    if (merchants.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 italic">No merchant data available</p>';
+        return;
+    }
+    
+    let html = '';
+    merchants.forEach((merchant, index) => {
+        html += `
+            <div class="bg-black/30 p-3 rounded-lg flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <span class="text-lg font-bold text-gray-400">${index + 1}.</span>
+                    <div>
+                        <p class="font-semibold text-white">${merchant.name}</p>
+                        <p class="text-xs text-gray-400">${merchant.count} transactions</p>
+                    </div>
+                </div>
+                <span class="text-blue-400 font-bold">₹${merchant.amount.toLocaleString('en-IN')}</span>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function displayCategorySummary(summary) {
+    const container = document.getElementById('categorySummary');
+    
+    const categories = [
+        { name: 'Repeating Charges', data: summary.repeating_charges, color: 'red' },
+        { name: 'Micro Transactions', data: summary.micro_transactions, color: 'yellow' },
+        { name: 'Fees & Charges', data: summary.fees, color: 'orange' },
+        { name: 'Penalties & Interest', data: summary.penalties, color: 'purple' }
+    ];
+    
+    let html = '';
+    categories.forEach(cat => {
+        html += `
+            <div class="bg-black/30 p-4 rounded-lg">
+                <p class="text-sm text-gray-400 mb-1">${cat.name}</p>
+                <p class="text-xl font-bold text-${cat.color}-400">₹${cat.data.total.toLocaleString('en-IN')}</p>
+                <p class="text-xs text-gray-400">${cat.data.count} items</p>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function displaySuggestions(suggestions) {
+    const container = document.getElementById('suggestions');
+    
+    let html = '';
+    suggestions.forEach(suggestion => {
+        html += `
+            <li class="flex items-start gap-2 text-gray-200">
+                <svg class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <span>${suggestion}</span>
+            </li>
+        `;
+    });
+    
+    container.innerHTML = html;
 }
 
 function displayRepeatingCharges(charges) {

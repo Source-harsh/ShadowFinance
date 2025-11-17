@@ -67,7 +67,9 @@ def detect_leaks(transactions):
     
     merchant_counts = {}
     merchant_to_lines = {}
+    merchant_amounts = {}
     counted_lines = set()
+    transaction_count = 0
     
     for idx, line in enumerate(transactions):
         if not line.strip():
@@ -88,9 +90,12 @@ def detect_leaks(transactions):
         if amount == 0:
             continue
         
+        transaction_count += 1
+        
         merchant = extract_merchant_name(line)
         if merchant:
             merchant_counts[merchant] = merchant_counts.get(merchant, 0) + 1
+            merchant_amounts[merchant] = merchant_amounts.get(merchant, 0) + amount
             if merchant not in merchant_to_lines:
                 merchant_to_lines[merchant] = []
             merchant_to_lines[merchant].append((idx, line, amount))
@@ -156,7 +161,54 @@ def detect_leaks(transactions):
     for item in penalties:
         del item['idx']
     
+    top_merchants = sorted(
+        [(merchant, merchant_amounts[merchant], merchant_counts[merchant]) 
+         for merchant in merchant_amounts],
+        key=lambda x: x[1],
+        reverse=True
+    )[:5]
+    
+    top_merchants_list = [
+        {'name': merchant, 'amount': round(amount, 2), 'count': count}
+        for merchant, amount, count in top_merchants
+    ]
+    
+    category_summary = {
+        'repeating_charges': {
+            'count': len(repeating_charges),
+            'total': round(sum(item['total'] for item in repeating_charges), 2)
+        },
+        'micro_transactions': {
+            'count': len(micro_transactions),
+            'total': round(sum(item['amount'] for item in micro_transactions), 2)
+        },
+        'fees': {
+            'count': len(fees),
+            'total': round(sum(item['amount'] for item in fees), 2)
+        },
+        'penalties': {
+            'count': len(penalties),
+            'total': round(sum(item['amount'] for item in penalties), 2)
+        }
+    }
+    
+    suggestions = []
+    if len(repeating_charges) > 0:
+        suggestions.append("Review your recurring subscriptions - you might be paying for services you no longer use.")
+    if len(fees) > 3:
+        suggestions.append("Consider switching to a bank account with lower or no fees.")
+    if len(penalties) > 0:
+        suggestions.append("Set up automatic payments to avoid late fees and interest charges.")
+    if len(micro_transactions) > 10:
+        suggestions.append("Small purchases add up! Try tracking your daily spending more carefully.")
+    if not suggestions:
+        suggestions.append("Good job! Your spending looks relatively clean. Keep monitoring regularly.")
+    
     return {
+        'transaction_count': transaction_count,
+        'top_merchants': top_merchants_list,
+        'category_summary': category_summary,
+        'suggestions': suggestions,
         'repeating_charges': repeating_charges,
         'micro_transactions': micro_transactions,
         'fees': fees,
