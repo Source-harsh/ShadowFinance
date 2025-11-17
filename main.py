@@ -77,7 +77,7 @@ def detect_leaks(transactions):
             
         line_lower = line.lower()
         
-        amount_match = re.search(r'₹?\s*(\d+(?:,\d+)*(?:\.\d{2})?)', line)
+        amount_match = re.search(r'(?:₹|Rs\.?|INR)?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\d+(?:\.\d{2})?)', line)
         if amount_match:
             amount_str = amount_match.group(1).replace(',', '')
             try:
@@ -88,6 +88,12 @@ def detect_leaks(transactions):
             amount = 0
         
         if amount == 0:
+            continue
+        
+        is_debit = any(marker in line_lower for marker in ['debit', 'dr', 'withdrawal', 'paid'])
+        is_credit = any(marker in line_lower for marker in ['credit', 'cr', 'deposit', 'received'])
+        
+        if is_credit and not is_debit:
             continue
         
         transaction_count += 1
