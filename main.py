@@ -303,6 +303,17 @@ def detect_leaks(transactions):
         }
     }
     
+    # Generate AI-powered alerts (anomaly detection)
+    alerts = generate_ai_alerts(
+        repeating_charges=repeating_charges,
+        micro_transactions=micro_transactions,
+        fees=fees,
+        penalties=penalties,
+        category_spending=category_spending,
+        merchant_amounts=merchant_amounts,
+        merchant_counts=merchant_counts
+    )
+    
     # Generate AI-powered suggestions
     suggestions = generate_ai_suggestions(
         repeating_charges=repeating_charges,
@@ -325,6 +336,7 @@ def detect_leaks(transactions):
         'top_merchants': top_merchants_list,
         'category_summary': category_summary,
         'category_spending': category_spending_list,
+        'alerts': alerts,
         'suggestions': suggestions,
         'repeating_charges': repeating_charges,
         'micro_transactions': micro_transactions,
@@ -397,6 +409,193 @@ def analyze():
     logger.info(f"Analysis complete. Found {len(results['repeating_charges'])} repeating charges, {len(results['micro_transactions'])} micro transactions")
     
     return jsonify(results)
+
+def generate_ai_alerts(repeating_charges, micro_transactions, fees, penalties, category_spending, merchant_amounts, merchant_counts):
+    """Use NVIDIA Llama to detect spending anomalies and generate alerts"""
+    
+    if not NVIDIA_API_KEY:
+        logger.warning("NVIDIA_API_KEY not set, generating rule-based alerts")
+        alerts = []
+        
+        # Duplicate subscription detection
+        subscription_keywords = ['netflix', 'spotify', 'prime', 'youtube', 'apple', 'google', 'disney', 'hulu', 'hbo']
+        found_subscriptions = {}
+        for merchant in merchant_counts.keys():
+            merchant_lower = merchant.lower()
+            for keyword in subscription_keywords:
+                if keyword in merchant_lower:
+                    service_type = keyword
+                    if service_type not in found_subscriptions:
+                        found_subscriptions[service_type] = []
+                    found_subscriptions[service_type].append(merchant)
+        
+        for service_type, merchants in found_subscriptions.items():
+            if len(merchants) > 1:
+                total_cost = sum(merchant_amounts.get(m, 0) for m in merchants)
+                alerts.append({
+                    'severity': 'high',
+                    'title': f'Duplicate {service_type.title()} Subscriptions Detected',
+                    'description': f'Found {len(merchants)} similar subscriptions: {", ".join(merchants)}. Consider canceling duplicates.',
+                    'impact': f'₹{total_cost:.0f}/month wasted',
+                    'action': 'Cancel duplicate subscriptions'
+                })
+        
+        # High fee alert
+        if len(fees) > 5:
+            total_fees = sum(f['amount'] for f in fees)
+            alerts.append({
+                'severity': 'high',
+                'title': 'Excessive Bank Fees',
+                'description': f'Detected {len(fees)} fee charges totaling ₹{total_fees:.2f}. This is unusually high.',
+                'impact': f'₹{total_fees * 12:.0f}/year in fees',
+                'action': 'Switch to zero-fee banking account'
+            })
+        
+        # Penalty alert
+        if len(penalties) > 0:
+            total_penalties = sum(p['amount'] for p in penalties)
+            alerts.append({
+                'severity': 'critical',
+                'title': 'Late Payment Penalties Detected',
+                'description': f'Found {len(penalties)} penalty charges. These are completely avoidable.',
+                'impact': f'₹{total_penalties:.0f} wasted on penalties',
+                'action': 'Set up auto-pay to avoid future penalties'
+            })
+        
+        # Micro-transaction overload
+        if len(micro_transactions) > 20:
+            total_micro = sum(m['amount'] for m in micro_transactions)
+            alerts.append({
+                'severity': 'medium',
+                'title': 'Death by a Thousand Cuts',
+                'description': f'{len(micro_transactions)} small purchases (₹20-200) add up to ₹{total_micro:.0f}.',
+                'impact': f'₹{total_micro * 12:.0f}/year in micro-spending',
+                'action': 'Set daily spending limit or use cash for small purchases'
+            })
+        
+        # Repeating charges alert
+        if len(repeating_charges) > 3:
+            total_recurring = sum(c['total'] for c in repeating_charges)
+            alerts.append({
+                'severity': 'medium',
+                'title': 'Multiple Recurring Subscriptions',
+                'description': f'You have {len(repeating_charges)} recurring charges. Are you using all of them?',
+                'impact': f'₹{total_recurring * 12:.0f}/year committed',
+                'action': 'Audit subscriptions - cancel unused ones'
+            })
+        
+        if not alerts:
+            alerts.append({
+                'severity': 'low',
+                'title': 'Clean Bill of Health! ✨',
+                'description': 'No major spending anomalies detected. Your finances look healthy.',
+                'impact': 'Keep up the good work!',
+                'action': 'Continue monitoring monthly'
+            })
+        
+        return alerts
+    
+    try:
+        # Prepare detailed data for AI analysis
+        subscription_merchants = [m for m in merchant_counts.keys() if merchant_counts[m] >= 2]
+        top_merchants = sorted(merchant_amounts.items(), key=lambda x: x[1], reverse=True)[:5]
+        
+        prompt = f"""You are an expert fraud detection and financial anomaly analyst. Analyze this user's spending data and identify HIGH PRIORITY ALERTS.
+
+TRANSACTION DATA:
+- Repeating Charges: {len(repeating_charges)} merchants (₹{sum(c['total'] for c in repeating_charges):.0f} total)
+- Subscription Merchants: {', '.join(subscription_merchants[:10]) if subscription_merchants else 'None'}
+- Micro-Transactions: {len(micro_transactions)} items
+- Bank Fees: {len(fees)} charges (₹{sum(f['amount'] for f in fees):.0f})
+- Penalties: {len(penalties)} charges (₹{sum(p['amount'] for p in penalties):.0f})
+- Top Merchants: {', '.join([f'{m} (₹{a:.0f})' for m, a in top_merchants])}
+
+DETECT AND REPORT:
+1. Duplicate/overlapping subscriptions (Netflix, Spotify, Prime, etc.)
+2. Unusual fee amounts or frequency
+3. Price increases in recurring charges
+4. Potential fraud (new unknown merchants with high charges)
+5. Excessive micro-spending patterns
+
+For EACH alert found, provide in this EXACT format:
+SEVERITY: [critical/high/medium/low]
+TITLE: [Short punchy title with emoji]
+DESCRIPTION: [2 sentences explaining the issue]
+IMPACT: [Financial impact in rupees/year]
+ACTION: [One specific action to take]
+---
+
+Provide 3-5 alerts maximum. Be specific with merchant names and amounts."""
+
+        headers = {
+            "Authorization": f"Bearer {NVIDIA_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        data = {
+            "model": "meta/llama-3.1-8b-instruct",
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.5,
+            "max_tokens": 800,
+            "top_p": 0.9,
+            "stream": False
+        }
+        
+        response = requests.post(NVIDIA_API_URL, headers=headers, json=data, timeout=15)
+        
+        if response.status_code == 200:
+            ai_response = response.json()['choices'][0]['message']['content']
+            
+            # Parse AI response into structured alerts
+            alerts = []
+            alert_blocks = ai_response.split('---')
+            
+            for block in alert_blocks:
+                if not block.strip():
+                    continue
+                
+                alert = {}
+                lines = [l.strip() for l in block.strip().split('\n') if l.strip()]
+                
+                for line in lines:
+                    if line.startswith('SEVERITY:'):
+                        severity = line.replace('SEVERITY:', '').strip().lower()
+                        alert['severity'] = severity if severity in ['critical', 'high', 'medium', 'low'] else 'medium'
+                    elif line.startswith('TITLE:'):
+                        alert['title'] = line.replace('TITLE:', '').strip()
+                    elif line.startswith('DESCRIPTION:'):
+                        alert['description'] = line.replace('DESCRIPTION:', '').strip()
+                    elif line.startswith('IMPACT:'):
+                        alert['impact'] = line.replace('IMPACT:', '').strip()
+                    elif line.startswith('ACTION:'):
+                        alert['action'] = line.replace('ACTION:', '').strip()
+                
+                # Only add if we have all required fields
+                if all(k in alert for k in ['severity', 'title', 'description', 'impact', 'action']):
+                    alerts.append(alert)
+            
+            logger.info(f"Generated {len(alerts)} AI alerts")
+            return alerts if alerts else [{
+                'severity': 'low',
+                'title': 'No Critical Issues Found',
+                'description': 'AI analysis complete. No major anomalies detected.',
+                'impact': 'Your spending looks normal',
+                'action': 'Keep monitoring regularly'
+            }]
+        else:
+            logger.error(f"NVIDIA API error for alerts: {response.status_code}")
+            raise Exception("AI API failed")
+            
+    except Exception as e:
+        logger.error(f"Error generating AI alerts: {e}")
+        # Return safe fallback
+        return [{
+            'severity': 'low',
+            'title': 'Alert System Unavailable',
+            'description': 'Unable to generate AI-powered alerts at this time.',
+            'impact': 'Manual review recommended',
+            'action': 'Review your transactions manually'
+        }]
 
 def generate_ai_suggestions(repeating_charges, micro_transactions, fees, penalties, category_spending, total_waste, transaction_count):
     """Use NVIDIA Llama to generate personalized financial suggestions"""
