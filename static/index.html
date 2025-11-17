@@ -21,9 +21,11 @@
                 <label class="block mb-4 text-lg font-semibold">Upload Bank Statement (PDF)</label>
                 <div id="dropzone" class="border-2 border-dashed border-purple-400 rounded-xl p-12 text-center hover:border-pink-400 transition-colors cursor-pointer">
                     <input type="file" id="fileInput" accept=".pdf" class="hidden">
-                    <svg class="mx-auto h-16 w-16 text-purple-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                    </svg>
+                    <div class="mx-auto h-16 w-16 mb-4 flex items-center justify-center">
+                        <svg class="h-full w-full text-black" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                        </svg>
+                    </div>
                     <p class="text-gray-300 mb-2">Click to browse or drag and drop your PDF here</p>
                     <p class="text-sm text-gray-400" id="fileName">No file selected</p>
                 </div>
